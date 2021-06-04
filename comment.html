@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./asset/tailwind.min.css">
+  <link rel="shortcut icon" href="favicon.ico" type="x-icon">
+  <script src="asset/vue.js"></script>
+  <script src="./asset/icon/iconfont.js"></script>
+  <title>评论区</title>
+</head>
+
+<body class="bg-gray-100 p-8">
+  <div id="app"
+    class="flex flex-col rounded-3xl hover:shadow-xl border-2 border-white overflow-hidden bg-white cursor-default comment-box">
+    <div class="bg-black text-white text-3xl font-bold text-center flex justify-between pl-8 pr-8">
+      <a class="hover:text-yellow-200" href="index.html">&lt;首页</a >
+      <p>评论区</p>
+      <a class="hover:text-yellow-200" href="login.html">登录&gt;</a>
+    </div>
+    <div class="flex flex-row overflow-auto">
+      <!-- S左边 -->
+      <div class="flex flex-col w-80 bg-gray-300 p-4 overflow-scroll gap-4">
+        <!-- S FOR -->
+        <div class="bg-white rounded-2xl hover:shadow-xl" v-for="cm in comments" :key="cm.id"
+          @click='showDetail(cm.id)'>
+          <div class="p-2 text-gray-800 font-bold text-xl">
+            <p>{{cm.title}}</p>
+          </div>
+          <div class="p-2 text-gray-500">
+            <p>
+              {{cm.comment|commentInfo}}
+            </p>
+          </div>
+          <div class="p-2 text-yellow-400 text-sm">
+            <p>{{cm.createTime}}</p>
+          </div>
+        </div>
+        <!-- E FOR -->
+      </div>
+      <!-- E左边 -->
+      <!-- S右边 -->
+      <div class="flex-1 bg-gray-400 p-8">
+        <div class="bg-gray-100 w-full h-full rounded-2xl hover:shadow-xl p-8">
+          <div class="text-center">
+            <p class="text-yellow-400 text-3xl">{{selComment.title}}</p>
+            <hr>
+          </div>
+          <!-- 详情部分 -->
+          <div class="mt-4 pl-16 pr-16 flex">
+            <!-- S 左侧 -->
+            <div class="flex flex-col gap-2 w-24 mr-8">
+              <div class="w-24 rounded-full border-8 border-white overflow-hidden">
+                <img :src="selComment.src">
+              </div>
+              <div class="text-center">
+                <p class="text-gray-900 text-xl font-bold">{{selComment.name}}</p>
+                <p class="text-gray-400">{{selComment.createTime}}</p>
+              </div>
+            </div>
+            <!-- E 左侧 -->
+            <!-- S 右侧 -->
+            <div class="flex-auto comment-right-box mt-8">
+              <div>
+                <p>
+                  {{selComment.comment}}
+                </p>
+              </div>
+            </div>
+            <!-- E 右侧 -->
+          </div>
+        </div>
+      </div>
+      <!-- E右边 -->
+    </div>
+    <!-- S FAB -->
+    <div
+      class="fixed bottom-20 right-20 w-16 h-16 bg-blue-300 rounded-full border-4 border-white shadow-2xl p-2 cursor-pointer"
+      @click="show()">
+      <svg class="icon w-10 h-10" aria-hidden="true">
+        <use xlink:href="#icon-js"></use>
+      </svg>
+    </div>
+    <!-- E FAB -->
+    <!-- S PUT -->
+    <div class="fixed w-full h-full top-0 left-0 put-box" v-show="visiable" @click="unshow()">
+      <div class="rounded-2xl put-form relative bg-gray-200 p-8" @click.stop="">
+        <form action="" method="post">
+          <label for="title">标题:</label><br>
+          <input class="w-full rounded-xl p-2" type="text" name="title" id="title"><br>
+          <label for="comment">评论:</label><br>
+          <textarea class="resize-none w-full rounded-xl p-2" name="comment" id="comment" cols="auto" rows="8"></textarea>
+          <button type="submit" class="bg-blue-200 rounded-xl border-2 border-white p-1 shadow-sm block m-auto w-40">发表评论</button>
+        </form>
+      </div>
+    </div>
+    <!-- E PUT -->
+  </div>
+</body>
+<script>
+  let vm = new Vue({
+    el: "#app",
+    data: {
+      visiable: false,
+      selComment: {
+        name: 'xjosiah',
+        src: './asset/image/doggie.jpg',
+        title: '标题测试',
+        comment: '内容测试',
+        createTime: new Date()
+      },
+      comments: [{
+        id: 0,
+        title: '标题测试0',
+        comment: '000000000000000内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 1,
+        title: '标题测试1',
+        comment: '111111111111111内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 2,
+        title: '标题测试2',
+        comment: '222222222222222内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 3,
+        title: '标题测试3',
+        comment: '333333333333333内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 4,
+        title: '标题测试4',
+        comment: '444444444444444内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 5,
+        title: '标题测试5',
+        comment: '555555555555555内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 6,
+        title: '标题测试6',
+        comment: '666666666666666内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 7,
+        title: '标题测试7',
+        comment: '777777777777777内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 8,
+        title: '标题测试8',
+        comment: '888888888888888内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      },
+      {
+        id: 9,
+        title: '标题测试9',
+        comment: '999999999999999内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
+        createTime: new Date()
+      }]
+    },
+    filters: {
+      commentInfo(value) {
+        if (value.length > 30) {
+          return value.slice(0, 30) + '...'
+        }
+      }
+    },
+    methods: {
+      showDetail(id) {
+        for (let i = 0; i < this.comments.length; i++) {
+          if (this.comments[i].id == id) {
+            this.selComment.title = this.comments[i].title
+            this.selComment.comment = this.comments[i].comment
+            this.selComment.createTime = this.comments[i].createTime
+          }
+        }
+      },
+      show() {
+        this.visiable = true
+      },
+      unshow() {
+        this.visiable = false
+      }
+    }
+  })
+</script>
+<style>
+  .comment-box {
+    height: 90vh;
+  }
+
+  .comment-right-box {
+    height: 40vh;
+    overflow: scroll;
+  }
+
+  .put-box {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  .put-form {
+    width: 50%;
+    top: 20%;
+    left: 25%;
+  }
+</style>
+
+</html>

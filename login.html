@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./asset/tailwind.min.css">
+  <link rel="shortcut icon" href="favicon.ico" type="x-icon">
+  <script src="asset/vue.js"></script>
+  <title>欢迎登录|注册</title>
+</head>
+
+<body class="bg-gray-100 p-8 pl-60 pr-60">
+  <div id="app"
+    class="flex flex-col rounded-3xl hover:shadow-xl border-2 border-white overflow-hidden bg-white cursor-default">
+    <div class="bg-black text-white text-3xl font-bold text-center flex justify-between pl-8 pr-8">
+      <a class="hover:text-blue-200" href="comment.html">&lt;评论</a>
+      <p>{{isLogin?'登录':'注册'}}</p>
+      <a class="hover:text-blue-200" href="index.html">首页&gt;</a>
+    </div>
+    <div class="bg-blue-100 form-box p-8 pl-40 pr-40 text-lg text-gray-600">
+      <form action="" method="POST" class="form" v-if="isLogin">
+        <div>
+          <label for="username">用户名：</label><br>
+          <input type="text" name="username" id="username">
+        </div>
+        <div>
+          <label for="password">请输入密码：</label><br>
+          <input type="password" name="password" id="password">
+        </div>
+        <div class="flex justify-center gap-10">
+          <button class="bg-gray-100 hover:shadow-lg" type="button" @click="toRegister()">注册</button>
+          <button class="bg-yellow-400 hover:shadow-lg" type="submit">登录</button>
+        </div>
+      </form>
+      <form action="" method="POST" class="form" v-else>
+        <div>
+          <label for="username">用户名：</label><br>
+          <input type="text" name="username" id="username">
+        </div>
+        <div>
+          <label for="password">请输入密码：</label><br>
+          <input type="password" name="password" id="password">
+        </div>
+        <div>
+          <label for="reword">请再次输入密码：</label><br>
+          <input type="password" name="reword" id="reword">
+        </div>
+        <div>
+          <label for="reword">在线头像地址(选填)：</label><br>
+          <input type="password" name="reword" id="reword">
+        </div>
+        <div class="flex justify-center gap-10">
+          <button class="bg-gray-100 hover:shadow-lg" type="button" @click="toLogin()">登录</button>
+          <button class="bg-yellow-400 hover:shadow-lg" type="submit">注册</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    let vm = new Vue({
+      el: "#app",
+      data: {
+        isLogin: true
+      },
+      methods: {
+        toRegister() {
+          this.isLogin = false
+        },
+        toLogin() {
+          this.isLogin = true
+        }
+      }
+    })
+  </script>
+</body>
+<style>
+  .form-box {
+    height: 80vh;
+  }
+
+  .form input {
+    width: 100%;
+    padding: 0 0.5rem;
+    border-radius: 2rem;
+    color: black;
+  }
+
+  .form>div {
+    margin-top: 1.5rem;
+  }
+
+  .form>div>button {
+    width: 20%;
+    border-radius: 2rem;
+    border: 0.25rem solid white;
+
+  }
+</style>
+
+</html>
