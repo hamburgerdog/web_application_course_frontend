@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./asset/tailwind.min.css">
   <link rel="shortcut icon" href="favicon.ico" type="x-icon">
+  <script src="./asset/axios.js"></script>
   <script src="asset/vue.js"></script>
   <title>欢迎登录|注册</title>
 </head>
@@ -15,45 +16,52 @@
   <div id="app"
     class="flex flex-col rounded-3xl hover:shadow-xl border-2 border-white overflow-hidden bg-white cursor-default">
     <div class="bg-black text-white text-3xl font-bold text-center flex justify-between pl-8 pr-8">
-      <a class="hover:text-blue-200" href="comment.html">&lt;评论</a>
+      <a class="hover:text-blue-200" href="comment.html">&lt;文章</a>
       <p>{{isLogin?'登录':'注册'}}</p>
       <a class="hover:text-blue-200" href="index.html">首页&gt;</a>
     </div>
     <div class="bg-blue-100 form-box p-8 pl-40 pr-40 text-lg text-gray-600">
-      <form action="" method="POST" class="form" v-if="isLogin">
+      <form method="POST" class="form" v-if="isLogin">
         <div>
-          <label for="username">用户名：</label><br>
-          <input type="text" name="username" id="username">
+          <label for="username">用户名：</label>
+          <label v-show="usernameError" for="username" class="text-red-600 text-sm align-text-top">*用户名不能为空</label><br>
+          <input type="text" name="username" id="username" v-model="loginUser.username">
         </div>
         <div>
-          <label for="password">请输入密码：</label><br>
-          <input type="password" name="password" id="password">
+          <label for="password">请输入密码：</label>
+          <label v-show="passwordError" for="password" class="text-red-600 text-sm align-text-top">*密码不能为空</label><br>
+          <input type="password" name="password" id="password" v-model="loginUser.password">
         </div>
         <div class="flex justify-center gap-10">
           <button class="bg-gray-100 hover:shadow-lg" type="button" @click="toRegister()">注册</button>
-          <button class="bg-yellow-400 hover:shadow-lg" type="submit">登录</button>
+          <button class="bg-yellow-400 hover:shadow-lg" type="button" @click="login()">登录</button>
         </div>
       </form>
-      <form action="" method="POST" class="form" v-else>
+      <form method="POST" class="form" v-else>
         <div>
-          <label for="username">用户名：</label><br>
-          <input type="text" name="username" id="username">
+          <label for="username">用户名：</label>
+          <label v-show="usernameError" for="username" class="text-red-600 text-sm align-text-top">*用户名不能为空</label><br>
+          <input type="text" name="username" id="username" v-model="register.username">
         </div>
         <div>
-          <label for="password">请输入密码：</label><br>
-          <input type="password" name="password" id="password">
+          <label for="password">请输入密码：</label>
+          <label v-show="passwordError" for="password"
+            class="text-red-600 text-sm align-text-top">*密码不能为空，请重新输入</label><br>
+          <input type="password" name="password" id="password" v-model="register.password">
         </div>
         <div>
-          <label for="reword">请再次输入密码：</label><br>
-          <input type="password" name="reword" id="reword">
+          <label for="reword">请再次输入密码：</label>
+          <label v-show="rewordError" for="reword"
+            class="text-red-600 text-sm align-text-top">*两次密码不一致，请重新输入</label><br>
+          <input type="password" name="reword" id="reword" v-model="register.reword">
         </div>
         <div>
-          <label for="reword">在线头像地址(选填)：</label><br>
-          <input type="password" name="reword" id="reword">
+          <label for="picUrl">在线头像地址(选填)：</label><br>
+          <input type="text" name="picUrl" id="picUrl" v-model="register.picUrl">
         </div>
         <div class="flex justify-center gap-10">
           <button class="bg-gray-100 hover:shadow-lg" type="button" @click="toLogin()">登录</button>
-          <button class="bg-yellow-400 hover:shadow-lg" type="submit">注册</button>
+          <button class="bg-yellow-400 hover:shadow-lg" type="button" @click="regist()">注册</button>
         </div>
       </form>
     </div>
@@ -62,14 +70,91 @@
     let vm = new Vue({
       el: "#app",
       data: {
-        isLogin: true
+        isLogin: true,
+        loginUser: {
+          username: '',
+          password: '',
+        },
+        register: {
+          username: '',
+          password: '',
+          reword: '',
+          picUrl: ''
+        },
+        usernameError: false,
+        passwordError: false,
+        rewordError: false,
       },
       methods: {
+        clearErrors() {
+          this.usernameError = false,
+            this.passwordError = false
+        },
         toRegister() {
+          this.clearErrors()
+          this.loginUser.password = ''
           this.isLogin = false
         },
         toLogin() {
+          this.clearErrors()
+          this.register.password = ''
+          this.register.reword = ''
           this.isLogin = true
+        },
+        login() {
+          if (this.loginUser.username === '') {
+            this.usernameError = true
+            return
+          }
+          this.usernameError = false
+          if (this.loginUser.password === '') {
+            this.passwordError = true
+            return
+          }
+          this.passwordError = false
+          axios.post("http://127.0.0.1:8080/user/login", this.loginUser, {
+            headers: {
+              "Access-Control-Allow-Origin": "*"
+            },
+            transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+          }).then(res => {
+            console.log(res);
+          })
+        },
+        regist() {
+          if (this.register.username === '') {
+            this.usernameError = true
+            return
+          }
+          this.usernameError = false
+          if (this.register.password === '') {
+            this.passwordError = true
+            return
+          }
+          this.passwordError = false
+          if (this.register.password !== this.register.reword) {
+            this.rewordError = true
+            return
+          }
+          this.rewordError = false
+          axios.post("http://127.0.0.1:8080/user/register", this.register, {
+            headers: {
+              "Access-Control-Allow-Origin": "*"
+            },
+            transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+          }).then(res => console.log(res))
         }
       }
     })
