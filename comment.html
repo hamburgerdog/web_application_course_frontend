@@ -9,6 +9,7 @@
   <link rel="shortcut icon" href="favicon.ico" type="x-icon">
   <script src="asset/vue.js"></script>
   <script src="./asset/icon/iconfont.js"></script>
+  <script src="./asset/axios.js"></script>
   <title>文章</title>
 </head>
 
@@ -16,22 +17,24 @@
   <div id="app"
     class="flex flex-col rounded-3xl hover:shadow-xl border-2 border-white overflow-hidden bg-white cursor-default comment-box">
     <div class="bg-black text-white text-3xl font-bold text-center flex justify-between pl-8 pr-8">
-      <a class="hover:text-yellow-200" href="index.html">&lt;首页</a >
+      <a class="hover:text-yellow-200" href="index.html">&lt;首页</a>
       <p>文章</p>
       <a class="hover:text-yellow-200" href="login.html">登录&gt;</a>
     </div>
-    <div class="flex flex-row overflow-auto">
+    <div ref="box" class="flex flex-row overflow-auto">
       <!-- S左边 -->
-      <div class="flex flex-col w-80 bg-gray-300 p-4 overflow-scroll gap-4">
+      <div @scroll="loadComments($event)" class="flex flex-col w-80 bg-gray-300 p-4 overflow-scroll gap-4">
         <!-- S FOR -->
-        <div class="bg-white rounded-2xl hover:shadow-xl" v-for="cm in comments" :key="cm.id"
-          @click='showDetail(cm.id)'>
-          <div class="p-2 text-gray-800 font-bold text-xl">
+        <div class="bg-white rounded-2xl hover:shadow-xl" v-for="(cm,index) in comments" :key="cm.commentId"
+          @click='showDetail(cm.commentId)' @mouseenter="hover(index)" @mouseleave="unhover(index)">
+          <div class="p-2 text-gray-800 font-bold text-xl flex justify-between items-center">
             <p>{{cm.title}}</p>
+            <div class="w-6 h-6 bg-gray-100 rounded-full text-white font-blod text-center hover:shadow-sm"
+              v-show="cm.hover" @click.stop="removeCm(index)">X</div>
           </div>
           <div class="p-2 text-gray-500">
             <p>
-              {{cm.comment|commentInfo}}
+              {{cm.content|commentInfo}}
             </p>
           </div>
           <div class="p-2 text-yellow-400 text-sm">
@@ -39,6 +42,7 @@
           </div>
         </div>
         <!-- E FOR -->
+        <p v-show="isLoading" class="text-gray-400 font-bold text-center">加载文章中请稍候。。。。。</p>
       </div>
       <!-- E左边 -->
       <!-- S右边 -->
@@ -53,7 +57,7 @@
             <!-- S 左侧 -->
             <div class="flex flex-col gap-2 w-24 mr-8">
               <div class="w-24 rounded-full border-8 border-white overflow-hidden">
-                <img :src="selComment.src">
+                <img :src="selComment.src!==''?selComment.src:'./asset/image/doggie.jpg'">
               </div>
               <div class="text-center">
                 <p class="text-gray-900 text-xl font-bold">{{selComment.name}}</p>
@@ -65,7 +69,7 @@
             <div class="flex-auto comment-right-box mt-8">
               <div>
                 <p>
-                  {{selComment.comment}}
+                  {{selComment.content}}
                 </p>
               </div>
             </div>
@@ -89,10 +93,13 @@
       <div class="rounded-2xl put-form relative bg-gray-200 p-8" @click.stop="">
         <form>
           <label for="title">标题:</label><br>
-          <input class="w-full rounded-xl p-2" type="text" name="title" id="title"><br>
+          <input class="w-full rounded-xl p-2" type="text" name="title" id="title" v-model="title"><br>
           <label for="comment">文章内容:</label><br>
-          <textarea class="resize-none w-full rounded-xl p-2" name="comment" id="comment" cols="auto" rows="8"></textarea>
-          <button type="button" class="bg-blue-200 rounded-xl border-2 border-white p-1 shadow-sm block m-auto w-40 hover:shadow-md">发表文章</button>
+          <textarea class="resize-none w-full rounded-xl p-2" name="comment" id="comment" cols="auto" rows="8"
+            v-model="content"></textarea>
+          <button type="button"
+            class="bg-blue-200 rounded-xl border-2 border-white p-1 shadow-sm block m-auto w-40 hover:shadow-md"
+            @click="addCm()">发表文章</button>
         </form>
       </div>
     </div>
@@ -103,89 +110,41 @@
   let vm = new Vue({
     el: "#app",
     data: {
+      title: '',
+      content: '',
       visiable: false,
       selComment: {
         name: 'xjosiah',
-        src: './asset/image/doggie.jpg',
+        src: '',
         title: '标题测试',
-        comment: '内容测试',
+        content: '内容测试',
         createTime: new Date()
       },
-      comments: [{
-        id: 0,
-        title: '标题测试0',
-        comment: '000000000000000内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 1,
-        title: '标题测试1',
-        comment: '111111111111111内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 2,
-        title: '标题测试2',
-        comment: '222222222222222内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 3,
-        title: '标题测试3',
-        comment: '333333333333333内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 4,
-        title: '标题测试4',
-        comment: '444444444444444内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 5,
-        title: '标题测试5',
-        comment: '555555555555555内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 6,
-        title: '标题测试6',
-        comment: '666666666666666内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 7,
-        title: '标题测试7',
-        comment: '777777777777777内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 8,
-        title: '标题测试8',
-        comment: '888888888888888内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      },
-      {
-        id: 9,
-        title: '标题测试9',
-        comment: '999999999999999内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试内容测试',
-        createTime: new Date()
-      }]
+      comments: [],
+      canLoad: true,
+      handleScoll: true,
+      isLoading: true,
     },
     filters: {
       commentInfo(value) {
         if (value.length > 30) {
           return value.slice(0, 30) + '...'
         }
+        return value
       }
     },
     methods: {
       showDetail(id) {
         for (let i = 0; i < this.comments.length; i++) {
-          if (this.comments[i].id == id) {
+          if (this.comments[i].commentId == id) {
+            this.selComment.name = this.comments[i].name
             this.selComment.title = this.comments[i].title
-            this.selComment.comment = this.comments[i].comment
+            this.selComment.content = this.comments[i].content
             this.selComment.createTime = this.comments[i].createTime
+            axios.get("http://127.0.0.1:8080/user/pic/"+this.selComment.name).then(res=>{
+              console.log(res);
+              this.selComment.src=res.data.data
+            })
           }
         }
       },
@@ -194,7 +153,79 @@
       },
       unshow() {
         this.visiable = false
+      },
+      hover(index) {
+        this.comments[index].hover = true
+      },
+      unhover(index) {
+        this.comments[index].hover = false
+      },
+      removeCm(index) {
+        let result = confirm("你真的要删除这篇文章吗？")
+        if (!result) return;
+        const token = localStorage.getItem("token")
+        if (token === null) {
+          alert("未登录，请先登录");
+          return
+        }
+        axios.delete(`http://127.0.0.1:8080/comment/${this.comments[index].commentId}/${token}`).then(res => {
+          console.log(res);
+        })
+      },
+      loadCm() {
+        axios.get(`http://127.0.0.1:8080/comment/${this.comments.length}`).then(res => {
+          if (res.data.data.length < 5) {
+            this.canLoad = false;
+            this.isLoading = false;
+          }
+          res.data.data.forEach(data => {
+            const date = new Date(data.createdTime);
+            const createTime = `${date.getFullYear()}年${(date.getMonth() + 1)}月${date.getDate()}日  ${date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}:${date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()}`
+            this.comments.push({
+              commentId: data.commentId,
+              title: data.title,
+              content: data.content,
+              name: data.author,
+              hover: false,
+              createTime,
+            })
+          })
+        })
+      },
+      addCm() {
+        const token = localStorage.getItem("token")
+        if (token === null) {
+          alert("未登录，请先登录");
+          return
+        }
+        axios.post("http://127.0.0.1:8080/comment/add", { title: this.title, content: this.content, token }, {
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        }).then(res => console.log(res.data))
+      },
+      loadComments(e) {
+        if (this.handleScoll) {
+          this.handleScoll = false
+          setTimeout(() => {
+            this.handleScoll = true;
+            if (e.srcElement.scrollTop + this.$refs.box.clientHeight === e.srcElement.scrollHeight) {
+              if (this.canLoad) {
+                this.loadCm();
+              } else {
+                alert("已经到底啦！")
+              }
+            }
+          }, 1000)
+        }
       }
+    },
+    beforeMount() {
+      this.loadCm()
     }
   })
 </script>
