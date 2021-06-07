@@ -119,9 +119,12 @@
   let vm = new Vue({
     el: "#app",
     data: {
+      // 添加文章表单使用
       title: '',
       content: '',
+      // 添加文章表单的显示状态
       visiable: false,
+      // 文章详情
       selComment: {
         name: 'unknown',
         src: '',
@@ -129,20 +132,26 @@
         content: '这里还没有内容喔~',
         createTime: new Date()
       },
+      // 当前加载所有文章
       comments: [],
+      // 是否加载所有文章
       canLoad: true,
-      handleScoll: true,
       isLoading: true,
+      // 处理滚动事件的节流阀门
+      handleScoll: true,
+      // 提示事件
       showTips: false,
       tips: '',
       isDanger: false
     },
     computed: {
+      // 提示框类型选择
       tipColor() {
         return this.isDanger ? 'background-color:rgb(247, 42, 42)' : 'background-color:rgb(11, 138, 249)'
       }
     },
     filters: {
+      //  文章粗略浏览大致内容的过滤器
       commentInfo(value) {
         if (value.length > 30) {
           return value.slice(0, 30) + '...'
@@ -151,13 +160,29 @@
       }
     },
     methods: {
-      showDetail(id) {
+      // 展示表单
+      show() {
+        this.visiable = true
+      },
+      unshow() {
+        this.visiable = false
+      },
+      // 文章粗略卡片显示删除按钮
+      hover(index) {
+        this.comments[index].hover = true
+      },
+      unhover(index) {
+        this.comments[index].hover = false
+      },
+      // 点击展示文章详情
+      showDetail(commentId) {
         for (let i = 0; i < this.comments.length; i++) {
-          if (this.comments[i].commentId == id) {
+          if (this.comments[i].commentId == commentId) {
             this.selComment.name = this.comments[i].name
             this.selComment.title = this.comments[i].title
             this.selComment.content = this.comments[i].content
             this.selComment.createTime = this.comments[i].createTime
+            // 获取头像，如果res.data.data===""则会更新为默认头像
             axios.get("http://127.0.0.1:8080/user/pic/" + this.selComment.name).then(res => {
               console.log(res);
               this.selComment.src = res.data.data
@@ -167,28 +192,19 @@
           }
         }
       },
-      show() {
-        this.visiable = true
-      },
-      unshow() {
-        this.visiable = false
-      },
-      hover(index) {
-        this.comments[index].hover = true
-      },
-      unhover(index) {
-        this.comments[index].hover = false
-      },
+      // 删除文章
       removeCm(index) {
-        let result = confirm("你真的要删除这篇文章吗？")
-        if (!result) return;
+        if (!confirm("你真的要删除这篇文章吗？")) return;
+        // 鉴权
         const token = localStorage.getItem("token")
         if (token === null) {
           this.showTip('用户未登录', true, () => location.href = "/login.html")
           return
         }
+        // 删除请求
         axios.delete(`http://127.0.0.1:8080/comment/${this.comments[index].commentId}/${token}`).then(res => {
           console.log(res);
+          // 在服务器鉴权-主要避免跳过js验证的请求，以及在服务端验证token是否过期
           if (!this.checkToken(res.data.code)) return
           switch (res.data.code) {
             case '3010':
@@ -204,15 +220,20 @@
           this.showServerErr(err)
         })
       },
+      // 加载文章
       loadCm() {
         axios.get(`http://127.0.0.1:8080/comment/${this.comments.length}`).then(res => {
           this.showTip('获取成功', false)
+          // 这里和服务器的limited（分页）对应。都为5，如果返回的数据长度比这个小，说明已经获取完全了
+          // 也可以将其设置为length====0，这样会多发一次请求
           if (res.data.data.length < 5) {
             this.canLoad = false;
             this.isLoading = false;
           }
+          // 添加获取到的文章们
           res.data.data.forEach(data => {
             const date = new Date(data.createdTime);
+            // 补0可以看ES2017的新操作preStart() preEnd()
             const createTime = `${date.getFullYear()}年${(date.getMonth() + 1)}月${date.getDate()}日  ${date.getHours()}:${date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()}:${date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()}`
             this.comments.push({
               commentId: data.commentId,
@@ -227,12 +248,15 @@
           this.showServerErr(err)
         })
       },
+      // 发表文章
       addCm() {
+        // 鉴权
         const token = localStorage.getItem("token")
         if (token === null) {
           this.showTip('用户未登录', true, () => location.href = "/login.html")
           return
         }
+        // 添加请求
         axios.post("http://127.0.0.1:8080/comment/add", { title: this.title, content: this.content, token }, {
           transformRequest: [function (data) {
             let ret = ''
@@ -256,11 +280,14 @@
             this.showServerErr(err)
           })
       },
+      // 上拉加载
       loadComments(e) {
+        //  节流
         if (this.handleScoll) {
           this.handleScoll = false
           setTimeout(() => {
             this.handleScoll = true;
+            // 核心：即子窗口滑出的距离加当前视口高度等于父窗口高度说明滑动到底
             if (e.srcElement.scrollTop + this.$refs.box.clientHeight === e.srcElement.scrollHeight) {
               if (this.canLoad) {
                 this.loadCm();
@@ -310,6 +337,7 @@
       }
     },
     beforeMount() {
+      // 页面第一次打开要先加载一些文章
       this.loadCm()
     }
   })

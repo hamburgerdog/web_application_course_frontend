@@ -79,34 +79,41 @@
     let vm = new Vue({
       el: "#app",
       data: {
+        // 页面展示（注册、登录页面）
         isLogin: true,
+        // 登录表单使用
         loginUser: {
           username: '',
           password: '',
         },
+        // 注册表单使用
         register: {
           username: '',
           password: '',
           reword: '',
           picUrl: ''
         },
+        // 输入框状态校验
         usernameError: false,
         passwordError: false,
         rewordError: false,
+        // 展示表单
         showTips: false,
         tips: '',
         isDanger: false
       },
       computed: {
+        // 提示框颜色以区分成功和出错两种状态
         tipColor() {
           return this.isDanger ? 'background-color:rgb(247, 42, 42)' : 'background-color:rgb(11, 138, 249)'
         }
       },
       methods: {
+        // 提示框模块
         showTip(tips, isDanger, cb, delay = 3000) {
-          this.tips = tips,
-            this.isDanger = isDanger,
-            this.showTips = true
+          this.tips = tips
+          this.isDanger = isDanger
+          this.showTips = true
           setTimeout(() => {
             this.showTips = false
             if (cb) {
@@ -126,15 +133,64 @@
               this.showTip('服务器出错啦！', true)
           }
         },
+        // 页面跳转时清除状态
         clearErrors() {
-          this.usernameError = false,
-            this.passwordError = false
+          this.usernameError = false
+          this.passwordError = false
         },
+        // 注册模块
         toRegister() {
           this.clearErrors()
           this.loginUser.password = ''
           this.isLogin = false
         },
+        regist() {
+          // 表单校验
+          if (this.register.username === '') {
+            this.usernameError = true
+            return
+          }
+          this.usernameError = false
+          if (this.register.password === '') {
+            this.passwordError = true
+            return
+          }
+          this.passwordError = false
+          if (this.register.password !== this.register.reword) {
+            this.rewordError = true
+            return
+          }
+          this.rewordError = false
+          // 注册请求
+          axios.post("http://127.0.0.1:8080/user/register", this.register, {
+            // form表单的格式转换
+            transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+          }).then(res => {
+            console.log(res)
+            switch (res.data.code) {
+              case '2000':
+                this.showTip('注册成功', false, this.toLogin)
+                break
+              case '2001':
+                this.showTip('两次密码不一致', true)
+                break
+              case '2002':
+                this.showTip('用户已存在', true, this.toLogin)
+                break
+              default:
+                this.showTip('服务器出了小差', true)
+            }
+          }).catch(err => {
+            this.showServerErr(err)
+          })
+        },
+        // 登录模块
         toLogin() {
           this.clearErrors()
           this.register.password = ''
@@ -142,6 +198,7 @@
           this.isLogin = true
         },
         login() {
+          // 表单验证
           if (this.loginUser.username === '') {
             this.usernameError = true
             return
@@ -152,7 +209,9 @@
             return
           }
           this.passwordError = false
+          // 登录请求
           axios.post("http://127.0.0.1:8080/user/login", this.loginUser, {
+            // 格式转换
             transformRequest: [function (data) {
               let ret = ''
               for (let it in data) {
@@ -172,49 +231,6 @@
                 break
               case '1003':
                 this.showTip('密码打错啦', true)
-                break
-              default:
-                this.showTip('服务器出了小差', true)
-            }
-          }).catch(err => {
-            this.showServerErr(err)
-          })
-        },
-        regist() {
-          if (this.register.username === '') {
-            this.usernameError = true
-            return
-          }
-          this.usernameError = false
-          if (this.register.password === '') {
-            this.passwordError = true
-            return
-          }
-          this.passwordError = false
-          if (this.register.password !== this.register.reword) {
-            this.rewordError = true
-            return
-          }
-          this.rewordError = false
-          axios.post("http://127.0.0.1:8080/user/register", this.register, {
-            transformRequest: [function (data) {
-              let ret = ''
-              for (let it in data) {
-                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-              }
-              return ret
-            }],
-          }).then(res => {
-            console.log(res)
-            switch (res.data.code) {
-              case '2000':
-                this.showTip('注册成功', false, this.toLogin)
-                break
-              case '2001':
-                this.showTip('两次密码不一致', true)
-                break
-              case '2002':
-                this.showTip('用户已存在', true, this.toLogin)
                 break
               default:
                 this.showTip('服务器出了小差', true)
