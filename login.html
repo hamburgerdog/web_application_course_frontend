@@ -65,6 +65,15 @@
         </div>
       </form>
     </div>
+    <!-- S warn -->
+    <transition>
+      <div
+        class="fixed top-4 h-12 tips rounded-3xl border-2 border-white shadow-lg text-center align-text-top text-white font-bold text-2xl"
+        v-show="showTips" :style="tipColor">
+        <p>{{tips}}</p>
+      </div>
+    </transition>
+    <!-- E warn -->
   </div>
   <script>
     let vm = new Vue({
@@ -84,8 +93,39 @@
         usernameError: false,
         passwordError: false,
         rewordError: false,
+        showTips: false,
+        tips: '',
+        isDanger: false
+      },
+      computed: {
+        tipColor() {
+          return this.isDanger ? 'background-color:rgb(247, 42, 42)' : 'background-color:rgb(11, 138, 249)'
+        }
       },
       methods: {
+        showTip(tips, isDanger, cb, delay = 3000) {
+          this.tips = tips,
+            this.isDanger = isDanger,
+            this.showTips = true
+          setTimeout(() => {
+            this.showTips = false
+            if (cb) {
+              cb()
+            }
+          }, delay)
+        },
+        showServerErr(err) {
+          switch (err.response.status) {
+            case 500:
+              this.showTip('服务器内部错误', true)
+              break
+            case 404:
+              this.showTip('找不到服务器', true)
+              break
+            default:
+              this.showTip('服务器出错啦！', true)
+          }
+        },
         clearErrors() {
           this.usernameError = false,
             this.passwordError = false
@@ -122,9 +162,22 @@
             }],
           }).then(res => {
             console.log(res);
-            if(res.data.code === "1000"){
-              localStorage.setItem("token",res.data.msg)
+            switch (res.data.code) {
+              case '1000':
+                localStorage.setItem("token", res.data.msg)
+                this.showTip('登录成功', false, () => { location.href = '/index.html' })
+                break
+              case '1002':
+                this.showTip('用户未注册', true)
+                break
+              case '1003':
+                this.showTip('密码打错啦', true)
+                break
+              default:
+                this.showTip('服务器出了小差', true)
             }
+          }).catch(err => {
+            this.showServerErr(err)
           })
         },
         regist() {
@@ -151,7 +204,24 @@
               }
               return ret
             }],
-          }).then(res => console.log(res))
+          }).then(res => {
+            console.log(res)
+            switch (res.data.code) {
+              case '2000':
+                this.showTip('注册成功', false, this.toLogin)
+                break
+              case '2001':
+                this.showTip('两次密码不一致', true)
+                break
+              case '2002':
+                this.showTip('用户已存在', true, this.toLogin)
+                break
+              default:
+                this.showTip('服务器出了小差', true)
+            }
+          }).catch(err => {
+            this.showServerErr(err)
+          })
         }
       }
     })
@@ -177,7 +247,25 @@
     width: 20%;
     border-radius: 2rem;
     border: 0.25rem solid white;
+  }
 
+  .tips {
+    width: 30%;
+    left: 35%;
+    /* background-color: rgb(247, 42, 42); */
+    /* background-color: rgb(11, 138, 249); */
+    line-height: 1.8
+  }
+
+  .v-enter,
+  .v-leave-to {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+
+  .v-enter-active,
+  .v-leave-active {
+    transition: all 1s ease-in-out;
   }
 </style>
 
